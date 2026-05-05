@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tananyagteszt – tanulási zavarok, ADHD, autizmus spektrumzavar</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #17202a;
+      --muted: #5d6d7e;
+      --primary: #1f618d;
+      --primary-dark: #154360;
+      --ok: #1e8449;
+      --bad: #b03a2e;
+      --warn: #b9770e;
+      --border: #d6dbdf;
+      --soft-ok: #eafaf1;
+      --soft-bad: #fdedec;
+      --soft-warn: #fef5e7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 26px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.45rem, 4vw, 2.2rem);
+    }
+
+    header p {
+      margin: 0;
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    main {
+      width: min(1050px, 94%);
+      margin: 22px auto 40px;
+    }
+
+    .panel,
+    .question-card,
+    .result-box,
+    .lock-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel strong {
+      color: var(--primary-dark);
+    }
+
+    .result-box {
+      display: none;
+      padding: 18px;
+      margin-bottom: 18px;
+      border-left: 8px solid var(--primary);
+    }
+
+    .result-box h2 {
+      margin-top: 0;
+      color: var(--primary-dark);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .result-item {
+      padding: 14px;
+      border-radius: 12px;
+      background: #eef3f7;
+      font-size: 1.05rem;
+    }
+
+    .result-item span {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .question-card {
+      padding: 18px;
+      margin: 16px 0;
+    }
+
+    .question-card.correct {
+      border-left: 8px solid var(--ok);
+      background: var(--soft-ok);
+    }
+
+    .question-card.incorrect {
+      border-left: 8px solid var(--bad);
+      background: var(--soft-bad);
+    }
+
+    .q-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      background: #e8eef3;
+      color: #2c3e50;
+    }
+
+    .topic {
+      background: #eaf2f8;
+      color: var(--primary-dark);
+      font-weight: bold;
+    }
+
+    .type {
+      background: #f4ecf7;
+      color: #6c3483;
+    }
+
+    .question-title {
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin: 8px 0 12px;
+    }
+
+    .options label,
+    .match-row {
+      display: block;
+      padding: 12px;
+      margin: 9px 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .options input {
+      margin-right: 8px;
+      transform: scale(1.08);
+    }
+
+    .match-row {
+      cursor: default;
+    }
+
+    .match-row strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 1rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 18px;
+      background: var(--primary);
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button.secondary {
+      background: #566573;
+    }
+
+    button.secondary:hover {
+      background: #34495e;
+    }
+
+    .submit-area {
+      text-align: center;
+      margin: 28px 0;
+    }
+
+    .submit-area button {
+      width: min(360px, 100%);
+      font-size: 1.08rem;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+    }
+
+    .feedback p {
+      margin: 6px 0;
+    }
+
+    .correct-text {
+      color: var(--ok);
+      font-weight: bold;
+    }
+
+    .incorrect-text {
+      color: var(--bad);
+      font-weight: bold;
+    }
+
+    .missing-text {
+      color: var(--warn);
+      font-weight: bold;
+    }
+
+    .lock-box {
+      padding: 22px;
+      margin: 22px auto;
+      border-left: 8px solid var(--bad);
+      background: var(--soft-bad);
+    }
+
+    .lock-box h2 {
+      margin-top: 0;
+      color: var(--bad);
+    }
+
+    .pin-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .pin-row input {
+      flex: 1;
+      min-width: 180px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+    }
+
+    .pin-message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .final-lock {
+      display: none;
+      padding: 18px;
+      margin: 24px 0;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--soft-warn);
+      border-left: 8px solid var(--warn);
+    }
+
+    .final-lock h2 {
+      margin-top: 0;
+      color: var(--warn);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        width: 95%;
+      }
+
+      .question-card,
+      .panel,
+      .result-box,
+      .lock-box {
+        padding: 14px;
+      }
+
+      .options label,
+      .match-row {
+        padding: 11px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tananyagteszt</h1>
+    <p>Diszlexia–diszgráfia–diszkalkulia · ADHD · Autizmus spektrumzavar</p>
+  </header>
+
+  <main>
+    <section id="lockedScreen" class="lock-box hidden">
+      <h2 id="lockedTitle">A teszt jelenleg zárolt.</h2>
+      <p id="lockedMessage"></p>
+      <p>A feloldáshoz tanári PIN-kód szükséges.</p>
+      <div class="pin-row">
+        <input type="password" id="unlockPinTop" placeholder="Tanári PIN-kód" autocomplete="off" />
+        <button type="button" onclick="unlockFromTop()">Feloldás</button>
+      </div>
+      <div id="unlockMessageTop" class="pin-message"></div>
+    </section>
+
+    <section id="testApp">
+      <section class="panel">
+        <p><strong>Útmutató:</strong> A teszt 30 kérdésből áll. Minden kérdés 1 pontot ér. A párosító feladatok akkor érnek pontot, ha minden párosítás helyes. A teszt kitöltése közben az oldal elhagyása, másik alkalmazásra váltás vagy a böngésző háttérbe kerülése a teszt érvénytelenítését okozza.</p>
+      </section>
+
+      <section id="resultBox" class="result-box">
+        <h2>Eredmény</h2>
+        <div class="result-grid">
+          <div class="result-item"><span>Helyes válaszok száma</span><strong id="scoreText">–</strong></div>
+          <div class="result-item"><span>Százalékos eredmény</span><strong id="percentText">–</strong></div>
+          <div class="result-item"><span>Érdemjegy</span><strong id="gradeText">–</strong></div>
+        </div>
+      </section>
+
+      <form id="quizForm"></form>
+
+      <div class="submit-area" id="submitArea">
+        <button type="button" onclick="evaluateQuiz()">Értékelés</button>
+      </div>
+
+      <section id="finalLockBox" class="final-lock">
+        <h2>Lezárt teszt.</h2>
+        <p>A teszt újranyitásához tanári PIN-kód szükséges.</p>
+        <div class="pin-row">
+          <input type="password" id="unlockPinBottom" placeholder="Tanári PIN-kód" autocomplete="off" />
+          <button type="button" onclick="unlockFromBottom()">Feloldás</button>
+        </div>
+        <div id="unlockMessageBottom" class="pin-message"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const ADMIN_PIN = '2023';
+
+    const STORAGE_STATUS_KEY = 'tananyagTeszt_status_v1';
+    const STORAGE_RESULT_KEY = 'tananyagTeszt_results_v1';
+
+    let testActive = false;
+    let testFinished = false;
+
+    const questions = [
+      {
+        id: 1,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Mit jelent a specifikus tanulási zavarok klasszikus triásza?',
+        options: [
+          'A beszédértés, a mozgáskoordináció és az érzelmi szabályozás együttes zavara.',
+          'Az olvasás, az írás-helyesírás és a számolás területén jelentkező sajátos zavar.',
+          'Az értelmi képességek általános csökkenése és a tanulási motiváció hiánya.',
+          'Az iskolai viselkedés, a társas kapcsolatok és a figyelem tartós zavara.'
+        ],
+        correct: 1
+      },
+      {
+        id: 2,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen a tanulási zavarokkal kapcsolatban?',
+        options: [
+          'A diszlexia esetén az olvasás automatizálódása nehezített és több energiát igényel.',
+          'A diszgráfia esetén érintett lehet az íráskép, a másolás és a helyesírás is.',
+          'A diszkalkulia fennállása esetén a tanuló általában értelmi fogyatékossággal is küzd.',
+          'A specifikus tanulási zavarok hátterében eltérő információfeldolgozás állhat.'
+        ],
+        correct: 2
+      },
+      {
+        id: 3,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Mondatkiegészítés',
+        mode: 'single',
+        question: 'A diszlexiás tanulónál az olvasás azért megterhelő, mert az olvasás gyakran nem automatikus, hanem ________ munka.',
+        options: [
+          'tudatos',
+          'ösztönös',
+          'szociális',
+          'mechanikus'
+        ],
+        correct: 0
+      },
+      {
+        id: 4,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Melyik példa illik leginkább a diszkalkulia mindennapi megjelenésére?',
+        options: [
+          'A tanuló nehezen várja ki a sorát, gyakran félbeszakít másokat.',
+          'A tanuló nehezen rögzíti a szorzótáblát, összekeveri a helyi értékeket.',
+          'A tanuló zavarba jön társas helyzetekben, kerüli a szemkontaktust.',
+          'A tanuló ragaszkodik a megszokott útvonalhoz, nehezen viseli a változásokat.'
+        ],
+        correct: 1
+      },
+      {
+        id: 5,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Fogalom párosítása meghatározással',
+        mode: 'matching',
+        question: 'Párosítsd a fogalmakat a megfelelő meghatározással!',
+        pairs: [
+          { term: 'Diszlexia', correct: 'Az olvasás elsajátításának és automatizálódásának zavara.' },
+          { term: 'Diszgráfia', correct: 'Az íráskép, írástempó vagy helyesírás tartós nehézsége.' },
+          { term: 'Diszkalkulia', correct: 'A számfogalom, mennyiségviszonyok és számolás sajátos zavara.' },
+          { term: 'Diszortográfia', correct: 'A helyesírás súlyos zavara, amely gyakran az írászavarhoz kapcsolódik.' }
+        ],
+        definitions: [
+          'A számfogalom, mennyiségviszonyok és számolás sajátos zavara.',
+          'A helyesírás súlyos zavara, amely gyakran az írászavarhoz kapcsolódik.',
+          'Az olvasás elsajátításának és automatizálódásának zavara.',
+          'Az íráskép, írástempó vagy helyesírás tartós nehézsége.'
+        ]
+      },
+      {
+        id: 6,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen a pedagógiai támogatással kapcsolatban?',
+        options: [
+          'A hosszabb idő segíthet, mert a feldolgozás gyakran lassabb és energiaigényesebb.',
+          'A más számonkérési mód (pl írásbeli helyett szóban) akkor indokolt, ha így az erősségek is megmutathatók.',
+          'A mentesítés célja, hogy a tanuló teljesen kikerüljön a tanulási helyzetekből.',
+          'A plusz instrukciók segíthetik az egyedi megértési út követését és rögzítését.'
+        ],
+        correct: 2
+      },
+      {
+        id: 7,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Mondatkiegészítés',
+        mode: 'single',
+        question: 'A tanulási zavarok esetén a cél a sérült részképességek fejlesztése mellett a ________ technikák megtanítása.',
+        options: [
+          'regeneráló',
+          'kompenzáló',
+          'sajátos',
+          'intuitív'
+        ],
+        correct: 1
+      },
+      {
+        id: 8,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Miért helytelen az a hozzáállás, hogy lustaságnak tekintsük a tanulási zavarral élő diák hibáit?',
+        options: [
+          'Mert ezek a tanulók minden iskolai területen azonos szinten teljesítenek.',
+          'Mert a tanulási zavar akkor erősödik leginkább, ha a tanuló nem figyel az órán.',
+          'Mert a hibák mögött gyakran eltérő feldolgozási út és nagyobb tudatos erőfeszítés áll.',
+          'Mert a tanulási zavar egy átmeneti állapot, amely fejlesztés hatására megszűnik.'
+        ],
+        correct: 2
+      },
+      {
+        id: 9,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Fogalom párosítása meghatározással',
+        mode: 'matching',
+        question: 'Párosítsd a fejlesztési/segítő eszközt a céljával!',
+        pairs: [
+          { term: 'Hangdifferenciálás', correct: 'Cél: a hasonló hangok pontosabb megkülönböztetése.' },
+          { term: 'Vonalzó használata olvasásnál', correct: 'Cél: segíteni a sor követését és csökkenteni az olvasási terhelést.' },
+          { term: 'Számológép használata', correct: 'Cél: a számolási részképességek zavara mellett is hozzáférhetővé tenni a feladat megoldását és tartalmát.' },
+          { term: 'Gondolattérkép', correct: 'Cél: vizuálisan rendezni az összefüggéseket, így segíteni a tanulást.' }
+        ],
+        definitions: [
+          'Cél: vizuálisan rendezni az összefüggéseket, így segíteni a tanulást.',
+          'Cél: a hasonló hangok pontosabb megkülönböztetése.',
+          'Cél: a számolási részképességek zavara mellett is hozzáférhetővé tenni a feladat megoldását és tartalmát.',
+          'Cél: segíteni a sor követését és csökkenteni az olvasási terhelést.'
+        ]
+      },
+      {
+        id: 10,
+        topic: 'Diszlexia, diszgráfia, diszkalkulia',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen a tanulási zavarok hosszabb távú értelmezésében?',
+        options: [
+          'A tanulási zavar élethosszig tartó sajátosság lehet, amely kompenzációs stratégiákkal jól kompenzálható.',
+          'A technológiai eszközök, például a szövegfelolvasók és helyesírás-ellenőrzők sokat segíthetnek.',
+          'A tanuló erősségeinek felismerése fontos, mert csökkenti a kudarcélményt.',
+          'A tanulási zavarral küzdő személyek egy része nem alkalmas önálló, felnőtt életre.'
+        ],
+        correct: 3
+      },
+
+      {
+        id: 11,
+        topic: 'ADHD',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Mit jelent magyarul az ADHD rövidítés?',
+        options: [
+          'Autizmushoz kapcsolódó társas kommunikációs akadályozottságot.',
+          'Figyelemhiányos hiperaktivitás-zavart, melynek oka idegrendszeri fejlődési eltérés.',
+          'Általános tanulási zavart, amely minden tantárgyaz azonos mértékben érint.',
+          'Magatartászavart, melynek hátterében a család diszfunkciója áll.'
+        ],
+        correct: 1
+      },
+      {
+        id: 12,
+        topic: 'ADHD',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen az ADHD 3 fő tünetcsoportjáról?',
+        options: [
+          'A figyelemzavar miatt a tanuló könnyen elterelhető és gyakran félbehagyja a feladatait.',
+          'A hiperaktivitás megjelenhet fészkelődésben, hangosságban vagy állandó mozgáskésztetésben.',
+          'Az impulzivitás lényege, hogy a tanuló önkontrollja hiányzik, nem igazán akarja visszafogni magát.',
+          'Az ADHD-s tanulónak nehézséget okozhat a sorára várás és a következmények mérlegelése.'
+        ],
+        correct: 2
+      },
+      {
+        id: 13,
+        topic: 'ADHD',
+        type: 'Mondatkiegészítés',
+        mode: 'single',
+        question: 'ADHD esetén az önszabályozás nehézsége összefügghet az agyi ingerületátvivő rendszer, különösen a ________ eltérő működésével.',
+        options: [
+          'dopamin-anyagcsere',
+          'oxigén-anyagcsere',
+          'hallóideg-reflex',
+          'izomtónus-szabályozás'
+        ],
+        correct: 0
+      },
+      {
+        id: 14,
+        topic: 'ADHD',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Melyik pedagógiai megoldás illeszkedik leginkább egy ADHD-s tanuló támogatásához?',
+        options: [
+          'Hosszú, megszakítás nélküli feladatsor adása mozgáslehetőség nélkül, a szabályok megtanulása érdekében.',
+          'Kiszámítható keretek, rövid feladategységek és azonnali pozitív megerősítés alkalmazása.',
+          'A figyelmetlenségre való rendszeres figyelmeztetés, ami miatt javulni fog a figyelemkoncentráció.',
+          'A vizuális jelzések, ábrák, piktogramok kerülése, mert azok elterelik a figyelmet.'
+        ],
+        correct: 1
+      },
+      {
+        id: 15,
+        topic: 'ADHD',
+        type: 'Fogalom párosítása meghatározással',
+        mode: 'matching',
+        question: 'Párosítsd az ADHD tünetcsoportjait a jellemző megnyilvánulásokkal!',
+        pairs: [
+          { term: 'Figyelemzavar', correct: 'Könnyű elterelhetőség, feledékenység, félbehagyott feladatok.' },
+          { term: 'Hiperaktivitás', correct: 'Folyamatos mozgáskésztetés, fészkelődés, nehéz egyhelyben maradás.' },
+          { term: 'Impulzivitás', correct: 'Hirtelen beszéd vagy cselekvés a következmények átgondolása előtt.' },
+          { term: 'Álmodozó típus', correct: 'Látható nyugtalanság nélkül is jelentős figyelmi nehézségek jellemzik.' }
+        ],
+        definitions: [
+          'Folyamatos mozgáskésztetés, fészkelődés, nehéz egyhelyben maradás.',
+          'Látható nyugtalanság nélkül is jelentős figyelmi nehézségek jellemzik.',
+          'Könnyű elterelhetőség, feledékenység, félbehagyott feladatok.',
+          'Hirtelen beszéd vagy cselekvés a következmények átgondolása előtt.'
+        ]
+      },
+      {
+        id: 16,
+        topic: 'ADHD',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen az ADHD diagnosztikájával kapcsolatban?',
+        options: [
+          'A tüneteknek több környezetben, például otthon és iskolában is jelen kell lenniük.',
+          'A tünetek tartós fennállása fontos szempont, legalább hat hónapig.',
+          'A pszichiáter szerepe döntő a diagnózis felállításában.',
+          'Az ADHD diagnózisához elegendő a szülői kérdőív kitöltése és beszélgetés a szakorvossal.'
+        ],
+        correct: 3
+      },
+      {
+        id: 17,
+        topic: 'ADHD',
+        type: 'Mondatkiegészítés',
+        mode: 'single',
+        question: 'Az ADHD-s tanulónál a büntetés kevésbé hatékony, mert később már nehezen köti össze a következményt a korábbi ________.',
+        options: [
+          'viselkedésével',
+          'stratégiával',
+          'diagnózisával',
+          'szavaival'
+        ],
+        correct: 0
+      },
+      {
+        id: 18,
+        topic: 'ADHD',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Miért fontos a mozgáslehetőség biztosítása ADHD-s tanulónak?',
+        options: [
+          'Mert a teljes mozdulatlanság elvárása gyakran irreális, a szabályozott mozgáslehetőség segítheti a munkát.',
+          'Mert a mozgáslehetőség miatt megszűnik a figyelmi nehézség és az impulzív viselkedés.',
+          'Mert a mozgás fejleszti a tanulási képességeket, ezért hatékonyabb a tananyag elsajátítása.',
+          'Mert az ADHD mozgáshiányból ered, ezért főként mozgásos támogatásra van szükség.'
+        ],
+        correct: 0
+      },
+      {
+        id: 19,
+        topic: 'ADHD',
+        type: 'Fogalom párosítása meghatározással',
+        mode: 'matching',
+        question: 'Párosítsd a pedagógiai eszközöket a szerepükkel!',
+        pairs: [
+          { term: 'Strukturálás', correct: 'Szerepe: Világos napirenddel és szabályokkal kiszámíthatóbbá teszi a helyzetet.' },
+          { term: 'Vizuális jelzés', correct: 'Szerepe: Piktogramokkal vagy kiemelésekkel támogatja a figyelem fenntartását.' },
+          { term: 'Rövid távú jutalmazás', correct: 'Szerepe: Azonnali megerősítéssel segíti a kívánt viselkedés rögzülését.' },
+          { term: 'Legális mocorgás', correct: 'Szerepe: Elfogadható keretet ad a mozgásigény szabályozott levezetésére.' }
+        ],
+        definitions: [
+          'Szerepe: Azonnali megerősítéssel segíti a kívánt viselkedés rögzülését.',
+          'Szerepe: Világos napirenddel és szabályokkal kiszámíthatóbbá teszi a helyzetet.',
+          'Szerepe: Elfogadható keretet ad a mozgásigény szabályozott levezetésére.',
+          'Szerepe: Piktogramokkal vagy kiemelésekkel támogatja a figyelem fenntartását.'
+        ]
+      },
+      {
+        id: 20,
+        topic: 'ADHD',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen az ADHD-s tanulók erősségeiről és életútjáról?',
+        options: [
+          'Sok ADHD-s tanuló kreatív, energikus és érdeklődő lehet megfelelő környezetben.',
+          'A rendszeres sport segíthet az energia levezetésében és sikerélményt adhat.',
+          'Felnőttkorban is megmaradhat szervezetlenség vagy belső nyugtalanság formájában.',
+          'Az ADHD majdnem minden esetben kizárja, hogy felnőttként hatékony munkát végezzen.'
+        ],
+        correct: 3
+      },
+
+      {
+        id: 21,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Mit jelent az autizmus spektrumzavarban a „spektrum” kifejezés?',
+        options: [
+          'A spektrum egy olyan "vonal", amely az „enyhe” autizmustól a „súlyosig” tart.',
+          'A spektrum egy tulajdonság-paletta, ahol minden autistának egyedi és különböző erősségei és nehézségei vannak',
+          'A spektrum két vége azt mutatja meg, hogy valaki értelmi fogyatékos vagy éppen különleges zseni-e.',
+          'A spektrum a „betegségből” való kigyógyulás szakaszait mutatja a normális állapot felé.'
+        ],
+        correct: 1
+      },
+      {
+        id: 22,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen az autizmus fő területeiről?',
+        options: [
+          'Érintett lehet a szociális kommunikáció és mások szándékainak értelmezése.',
+          'Jellemző lehet a rugalmatlan, repetitív viselkedés és a rutinokhoz ragaszkodás.',
+          'Gyakoriak lehetnek érzékelési-észlelési sajátosságok, például túlérzékenység.',
+          'Gyakori a szándékos udvariatlanság és az együttműködés teljes hiánya.'
+        ],
+        correct: 3
+      },
+      {
+        id: 23,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Mondatkiegészítés',
+        mode: 'single',
+        question: 'Az autizmussal élők gyakran nehezen értik a humort, metaforát vagy átvitt értelmű kifejezéseket, mert sokszor ________ értelmezik a nyelvet.',
+        options: [
+          'ritmikusan',
+          'szó szerint',
+          'matematikailag',
+          'véletlenszerűen'
+        ],
+        correct: 1
+      },
+      {
+        id: 24,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Mi a TEACCH program egyik fontos alapelve?',
+        options: [
+          'A tanulási környezet teljes kiszámíthatatlansága, hogy a diák hozzászokhasson a változásokhoz.',
+          'A fizikai és időbeli struktúra megteremtése vizuális támogatásokkal.',
+          'A képi segítségek kerülése, mert a szóbeli utasítás fejleszti legjobban a megértést.',
+          'A repetitív viselkedések minden körülmények közötti tiltása.'
+        ],
+        correct: 1
+      },
+      {
+        id: 25,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Fogalom párosítása meghatározással',
+        mode: 'matching',
+        question: 'Párosítsd az autizmussal kapcsolatos fogalmakat a meghatározásukkal!',
+        pairs: [
+          { term: 'Echolália', correct: 'Hallott szavak vagy mondatok visszhangszerű ismétlése.' },
+          { term: 'Szenzoros túlérzékenység', correct: 'Bizonyos hangok, fények vagy érintések szokatlanul erős zavaró hatása.' },
+          { term: 'Repetitív viselkedés', correct: 'Ismétlődő mozdulatok, tevékenységek vagy rutinok követése.' },
+          { term: 'AAC', correct: 'Alternatív vagy augmentatív kommunikáció, például képkártyás segítség.' }
+        ],
+        definitions: [
+          'Alternatív vagy augmentatív kommunikáció, például képkártyás segítség.',
+          'Ismétlődő mozdulatok, tevékenységek vagy rutinok követése.',
+          'Hallott szavak vagy mondatok visszhangszerű ismétlése.',
+          'Bizonyos hangok, fények vagy érintések szokatlanul erős zavaró hatása.'
+        ]
+      },
+      {
+        id: 26,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen az autizmus okaival kapcsolatban?',
+        options: [
+          'Az autizmus hátterében komplex, erős genetikai komponens is állhat.',
+          'A környezeti tényezők hatása kutatott, de az állapotot nem nevelési hiba okozza.',
+          'Az autizmus az érzéketlen, erősen elhanyagoló anyai nevelési stílus következménye is lehet.',
+          'Az idegrendszeri fejlődés eltérő működése befolyásolhatja az információfeldolgozást.'
+        ],
+        correct: 2
+      },
+      {
+        id: 27,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Mondatkiegészítés',
+        mode: 'single',
+        question: 'Ha a tanuló nem beszél, a kommunikáció támogatására alkalmazható például a PECS, ahol a tanuló ________ segítségével kérhet valamit.',
+        options: [
+          'kihangosító eszközök',
+          'tablet',
+          'képkártyák',
+          'jelnyelv'
+        ],
+        correct: 2
+      },
+      {
+        id: 28,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Egyszerű feleletválasztás',
+        mode: 'single',
+        question: 'Miért hasznosak a szociális történetek autizmussal élő tanulóknál?',
+        options: [
+          'Mert kiválthatják, pótolhatják a tanórai kommunikációt és a kortárs kapcsolatokat.',
+          'Mert képes formában, konkrét helyzeteken keresztül tanítják a társas szabályokat.',
+          'Mert segítik a tanórai helyzetekben való gyors reagálásokat.',
+          'Mert csökkentik az autizmus tüneteit, ha a tanuló elég sok történetet hall/olvas.'
+        ],
+        correct: 1
+      },
+      {
+        id: 29,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Fogalom párosítása meghatározással',
+        mode: 'matching',
+        question: 'Párosítsd az autista tanuló támogatásának módjait a pedagógiai céljukkal!',
+        pairs: [
+          { term: 'Vizuális napirend', correct: 'Cél: Előre jelzi a tevékenységek sorrendjét és csökkentheti a szorongást.' },
+          { term: 'Menekülő hely', correct: 'Cél: Biztonságos visszavonulási lehetőséget ad túlterhelés esetén.' },
+          { term: 'Speciális érdeklődés bevonása', correct: 'Cél: A tanuló motivációját és fókuszát kapcsolja a tananyaghoz.' },
+          { term: 'Társak érzékenyítése', correct: 'Cél: Segíti az elfogadóbb közösséget és csökkentheti a kiközösítés esélyét.' }
+        ],
+        definitions: [
+          'Cél: A tanuló motivációját és fókuszát kapcsolja a tananyaghoz.',
+          'Cél: Előre jelzi a tevékenységek sorrendjét és csökkentheti a szorongást.',
+          'Cél: Segíti az elfogadóbb közösséget és csökkentheti a kiközösítés esélyét.',
+          'Cél: Biztonságos visszavonulási lehetőséget ad túlterhelés esetén.'
+        ]
+      },
+      {
+        id: 30,
+        topic: 'Autizmus spektrumzavar',
+        type: 'Hibakereső feleletválasztás',
+        mode: 'single',
+        question: 'Melyik állítás helytelen az autizmussal élő tanulók oktatásáról?',
+        options: [
+          'Az oktatásban egyénre szabott pedagógiai tervre van szükség.',
+          'Az ingerek mennyiségére figyelni kell, mert túlterhelhetik az idegrendszert.',
+          'A speciális érdeklődési körök pedagógiai erőforrásként is használhatók.',
+          'Az autista tanulóknak ugyanaz a módszer és tanulási környezet a megfelelő.'
+        ],
+        correct: 3
+      }
+    ];
+
+    function init() {
+      const status = localStorage.getItem(STORAGE_STATUS_KEY);
+
+      if (status === 'invalid') {
+        showLockedScreen('Sajnálom, a teszted érvénytelen lett! :(');
+        return;
+      }
+
+      if (status === 'locked') {
+        showLockedScreen('Lezárt teszt.');
+        return;
+      }
+
+      renderQuiz();
+      testActive = true;
+    }
+
+    function renderQuiz() {
+      const form = document.getElementById('quizForm');
+      form.innerHTML = '';
+
+      questions.forEach((q, index) => {
+        const card = document.createElement('section');
+        card.className = 'question-card';
+        card.id = `question-${q.id}`;
+
+        const meta = document.createElement('div');
+        meta.className = 'q-meta';
+        meta.innerHTML = `
+          <span class="tag topic">${q.topic}</span>
+          <span class="tag type">${q.type}</span>
+          <span class="tag">${index + 1}. kérdés</span>
+        `;
+
+        const title = document.createElement('div');
+        title.className = 'question-title';
+        title.textContent = q.question;
+
+        card.appendChild(meta);
+        card.appendChild(title);
+
+        if (q.mode === 'single') {
+          const options = document.createElement('div');
+          options.className = 'options';
+
+          q.options.forEach((option, optionIndex) => {
+            const label = document.createElement('label');
+            label.innerHTML = `
+              <input type="radio" name="q${q.id}" value="${optionIndex}">
+              ${letter(optionIndex)}. ${escapeHtml(option)}
+            `;
+            options.appendChild(label);
+          });
+
+          card.appendChild(options);
+        }
+
+        if (q.mode === 'matching') {
+          const matchBox = document.createElement('div');
+          matchBox.className = 'matching';
+
+          q.pairs.forEach((pair, pairIndex) => {
+            const row = document.createElement('div');
+            row.className = 'match-row';
+
+            let selectHtml = `<select name="q${q.id}_m${pairIndex}">`;
+            selectHtml += `<option value="">Válassz meghatározást...</option>`;
+            q.definitions.forEach((def, defIndex) => {
+              selectHtml += `<option value="${defIndex}">${letter(defIndex)}. ${escapeHtml(def)}</option>`;
+            });
+            selectHtml += `</select>`;
+
+            row.innerHTML = `
+              <strong>${escapeHtml(pair.term)}</strong>
+              ${selectHtml}
+            `;
+            matchBox.appendChild(row);
+          });
+
+          card.appendChild(matchBox);
+        }
+
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback';
+        feedback.id = `feedback-${q.id}`;
+        card.appendChild(feedback);
+
+        form.appendChild(card);
+      });
+    }
+
+    function evaluateQuiz() {
+      if (testFinished) return;
+
+      testActive = false;
+      testFinished = true;
+
+      let score = 0;
+      const results = [];
+
+      questions.forEach(q => {
+        const card = document.getElementById(`question-${q.id}`);
+        const feedback = document.getElementById(`feedback-${q.id}`);
+        let isCorrect = false;
+        let ownAnswer = '';
+        let correctAnswer = '';
+
+        if (q.mode === 'single') {
+          const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+          const selectedIndex = selected ? Number(selected.value) : null;
+
+          isCorrect = selectedIndex === q.correct;
+          ownAnswer = selectedIndex === null ? 'Nincs válasz megadva.' : `${letter(selectedIndex)}. ${q.options[selectedIndex]}`;
+          correctAnswer = `${letter(q.correct)}. ${q.options[q.correct]}`;
+
+          disableSingleQuestion(q.id);
+        }
+
+        if (q.mode === 'matching') {
+          const ownParts = [];
+          const correctParts = [];
+          let allCorrect = true;
+
+          q.pairs.forEach((pair, pairIndex) => {
+            const select = document.querySelector(`select[name="q${q.id}_m${pairIndex}"]`);
+            const selectedDefIndex = select.value === '' ? null : Number(select.value);
+            const selectedDef = selectedDefIndex === null ? 'Nincs válasz megadva.' : q.definitions[selectedDefIndex];
+
+            const correctDefIndex = q.definitions.indexOf(pair.correct);
+            const correctDef = q.definitions[correctDefIndex];
+
+            if (selectedDef !== pair.correct) {
+              allCorrect = false;
+            }
+
+            ownParts.push(`${pair.term}: ${selectedDefIndex === null ? 'Nincs válasz megadva.' : letter(selectedDefIndex) + '. ' + selectedDef}`);
+            correctParts.push(`${pair.term}: ${letter(correctDefIndex)}. ${correctDef}`);
+            select.disabled = true;
+          });
+
+          isCorrect = allCorrect;
+          ownAnswer = ownParts.join('<br>');
+          correctAnswer = correctParts.join('<br>');
+        }
+
+        if (isCorrect) {
+          score++;
+          card.classList.add('correct');
+          card.classList.remove('incorrect');
+        } else {
+          card.classList.add('incorrect');
+          card.classList.remove('correct');
+        }
+
+        feedback.style.display = 'block';
+        feedback.innerHTML = `
+          <p><strong>Eredmény:</strong> <span class="${isCorrect ? 'correct-text' : 'incorrect-text'}">${isCorrect ? 'Helyes válasz.' : 'Helytelen válasz.'}</span></p>
+          <p><strong>Saját válasz:</strong><br>${ownAnswer}</p>
+          <p><strong>Helyes válasz:</strong><br><span class="correct-text">${correctAnswer}</span></p>
+        `;
+
+        results.push({
+          id: q.id,
+          isCorrect,
+          ownAnswer,
+          correctAnswer
+        });
+      });
+
+      const percent = Math.round((score / questions.length) * 100);
+      const grade = getGrade(percent);
+
+      document.getElementById('scoreText').textContent = `${score} / ${questions.length}`;
+      document.getElementById('percentText').textContent = `${percent}%`;
+      document.getElementById('gradeText').textContent = grade;
+      document.getElementById('resultBox').style.display = 'block';
+      document.getElementById('submitArea').classList.add('hidden');
+      document.getElementById('finalLockBox').style.display = 'block';
+
+      localStorage.setItem(STORAGE_STATUS_KEY, 'locked');
+      localStorage.setItem(STORAGE_RESULT_KEY, JSON.stringify({
+        score,
+        percent,
+        grade,
+        results,
+        completedAt: new Date().toISOString()
+      }));
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function disableSingleQuestion(questionId) {
+      const inputs = document.querySelectorAll(`input[name="q${questionId}"]`);
+      inputs.forEach(input => input.disabled = true);
+    }
+
+    function getGrade(percent) {
+      if (percent <= 39) return '1 (elégtelen)';
+      if (percent <= 49) return '2 (elégséges)';
+      if (percent <= 59) return '3 (közepes)';
+      if (percent <= 79) return '4 (jó)';
+      return '5 (jeles)';
+    }
+
+    function showLockedScreen(message) {
+      testActive = false;
+      testFinished = true;
+
+      document.getElementById('testApp').classList.add('hidden');
+      document.getElementById('lockedScreen').classList.remove('hidden');
+      document.getElementById('lockedMessage').textContent = message;
+
+      if (message === 'Sajnálom, a teszted érvénytelen lett! :(') {
+        document.getElementById('lockedTitle').textContent = 'Érvénytelen teszt';
+      } else {
+        document.getElementById('lockedTitle').textContent = 'Lezárt teszt.';
+      }
+    }
+
+    function invalidateTest() {
+      if (!testActive || testFinished) return;
+
+      testActive = false;
+      testFinished = true;
+      localStorage.setItem(STORAGE_STATUS_KEY, 'invalid');
+      showLockedScreen('Sajnálom, a teszted érvénytelen lett! :(');
+    }
+
+    function unlockFromTop() {
+      const input = document.getElementById('unlockPinTop');
+      const message = document.getElementById('unlockMessageTop');
+      attemptUnlock(input, message);
+    }
+
+    function unlockFromBottom() {
+      const input = document.getElementById('unlockPinBottom');
+      const message = document.getElementById('unlockMessageBottom');
+      attemptUnlock(input, message);
+    }
+
+    function attemptUnlock(input, messageElement) {
+      if (input.value === ADMIN_PIN) {
+        localStorage.removeItem(STORAGE_STATUS_KEY);
+        localStorage.removeItem(STORAGE_RESULT_KEY);
+        location.reload();
+      } else {
+        messageElement.textContent = 'Hibás PIN-kód.';
+        messageElement.style.color = 'var(--bad)';
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function letter(index) {
+      return String.fromCharCode(65 + index);
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        invalidateTest();
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (testActive && !testFinished) {
+          invalidateTest();
+        }
+      }, 120);
+    });
+
+    window.addEventListener('pagehide', () => {
+      invalidateTest();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      invalidateTest();
+    });
+
+    init();
+  </script>
+</body>
+</html>
